@@ -1,0 +1,114 @@
+<section class="cl" aria-label="Conversations">
+  <header class="cl__head">
+    <h2 class="cl__title">Conversations</h2>
+    @if (mode === 'assistant') {
+      <button type="button" class="ui-btn ui-btn--sm" (click)="newRequested.emit()">
+        <mat-icon aria-hidden="true">add</mat-icon>
+        Nouvelle
+      </button>
+    }
+  </header>
+
+  @if (store.conversations() && store.conversations()!.length > 0) {
+    <div class="cl__search">
+      <mat-icon aria-hidden="true">filter_list</mat-icon>
+      <input
+        type="text"
+        class="cl__search-input"
+        placeholder="Filtrer par titre…"
+        aria-label="Filtrer les conversations par titre"
+        [ngModel]="filter()"
+        (ngModelChange)="filter.set($event)"
+        autocomplete="off"
+      />
+    </div>
+  }
+
+  <div class="cl__body">
+    @if (store.conversations() === null) {
+      <div class="cl__skeletons" aria-busy="true" aria-label="Chargement des conversations">
+        @for (n of [1, 2, 3, 4]; track n) {
+          <div class="cl__skeleton">
+            <span class="ui-skeleton" style="height: 14px; width: 70%"></span>
+            <span class="ui-skeleton" style="height: 11px; width: 45%"></span>
+          </div>
+        }
+      </div>
+    } @else if (store.error() && store.conversations()!.length === 0) {
+      <div class="ui-error" role="alert">
+        <mat-icon aria-hidden="true">error_outline</mat-icon>
+        <span>{{ store.error() }} <button type="button" class="cl__link" (click)="store.load()">Réessayer</button></span>
+      </div>
+    } @else if (store.conversations()!.length === 0) {
+      <div class="ui-empty">
+        <mat-icon aria-hidden="true">forum</mat-icon>
+        <strong>Aucune conversation</strong>
+        <p>Vos échanges avec l'assistant apparaîtront ici, avec un titre tiré de votre première question.</p>
+      </div>
+    } @else if (groups().length === 0) {
+      <p class="cl__none">Aucune conversation ne correspond à « {{ filter() }} ».</p>
+    } @else {
+      @for (group of groups(); track group.label) {
+        <h3 class="cl__group">{{ group.label }}</h3>
+        <ul class="cl__list">
+          @for (chat of group.chats; track chat.id) {
+            <li class="cl__item" [class.cl__item--active]="isActive(chat)">
+              @if (editingId() === chat.id) {
+                <form class="cl__edit" (ngSubmit)="saveRename(chat)" (keydown.escape)="cancelRename()">
+                  <label class="sr-only" [attr.for]="inputId(chat)">Nouveau titre de la conversation</label>
+                  <input
+                    class="ui-input cl__edit-input"
+                    [id]="inputId(chat)"
+                    name="title"
+                    maxlength="255"
+                    [(ngModel)]="editValue"
+                    autocomplete="off"
+                  />
+                  <button type="submit" class="cl__icon-btn" aria-label="Enregistrer le titre" matTooltip="Enregistrer"><mat-icon aria-hidden="true">check</mat-icon></button>
+                  <button type="button" class="cl__icon-btn" aria-label="Annuler le renommage" matTooltip="Annuler" (click)="cancelRename()"><mat-icon aria-hidden="true">close</mat-icon></button>
+                </form>
+              } @else if (confirmingId() === chat.id) {
+                <div class="cl__confirm" role="alertdialog" [attr.aria-label]="'Supprimer « ' + chat.title + ' » ?'">
+                  <span>Supprimer cette conversation ? Action irréversible.</span>
+                  <div class="cl__confirm-actions">
+                    <button type="button" class="ui-btn ui-btn--sm cl__danger" (click)="confirmDelete(chat, $event)">Supprimer</button>
+                    <button type="button" class="ui-btn ui-btn--sm" (click)="cancelDelete($event)">Annuler</button>
+                  </div>
+                </div>
+              } @else {
+                <div class="cl__row">
+                  <button type="button" class="cl__open" (click)="open(chat)" [attr.aria-current]="isActive(chat) ? 'true' : null">
+                    <span class="cl__item-title">{{ chat.title }}</span>
+                    <span class="cl__item-meta">
+                      {{ when(chat) }} · {{ chat.messageCount }} message{{ chat.messageCount > 1 ? 's' : '' }}
+                      @if (chat.selectedModule) {
+                        <span class="ui-tag">{{ chat.selectedModule }}</span>
+                      }
+                    </span>
+                  </button>
+                  <span class="cl__actions">
+                    <button
+                      type="button"
+                      class="cl__icon-btn"
+                      (click)="switchView(chat, $event)"
+                      [attr.aria-label]="mode === 'history' ? 'Continuer cette conversation dans l\'assistant' : 'Consulter cette conversation dans l\'historique'"
+                      [matTooltip]="mode === 'history' ? 'Continuer dans l\'assistant' : 'Voir dans l\'historique'"
+                    >
+                      <mat-icon aria-hidden="true">{{ mode === 'history' ? 'question_answer' : 'history' }}</mat-icon>
+                    </button>
+                    <button type="button" class="cl__icon-btn" (click)="startRename(chat, $event)" aria-label="Renommer la conversation" matTooltip="Renommer">
+                      <mat-icon aria-hidden="true">edit</mat-icon>
+                    </button>
+                    <button type="button" class="cl__icon-btn cl__icon-btn--danger" (click)="askDelete(chat, $event)" aria-label="Supprimer la conversation" matTooltip="Supprimer">
+                      <mat-icon aria-hidden="true">delete_outline</mat-icon>
+                    </button>
+                  </span>
+                </div>
+              }
+            </li>
+          }
+        </ul>
+      }
+    }
+  </div>
+</section>

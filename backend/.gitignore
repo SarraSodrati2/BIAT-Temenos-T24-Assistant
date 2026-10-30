@@ -1,0 +1,20 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# machine-local TLS truststore (JDK cacerts + local proxy/AV root CA), never commit
+.mvn/truststore/
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+.idea/
+*.iws
+*.iml
+*.ipr
+.vscode/
+.settings/
+.classpath
+.project
+
+HELP.md
+
+data/vector/index.json

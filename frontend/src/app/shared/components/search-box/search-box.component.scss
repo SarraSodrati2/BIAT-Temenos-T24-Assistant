@@ -1,0 +1,172 @@
+:host { display: block; position: relative; min-width: 0; }
+
+.sb { position: relative; }
+
+.sb__field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--biat-border);
+  border-radius: var(--radius-md);
+  background: var(--biat-white);
+  transition: border-color 0.16s var(--ease-out), box-shadow 0.16s var(--ease-out);
+
+  &:hover { border-color: var(--biat-muted-light); }
+  &:focus-within { border-color: var(--biat-primary); box-shadow: 0 0 0 3px var(--tint-selected); }
+}
+
+.sb__icon { color: var(--biat-muted); font-size: 20px; width: 20px; height: 20px; flex-shrink: 0; }
+
+.sb__input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--biat-text);
+  font: 400 14.5px/1 var(--font-ui);
+  outline: none;
+
+  &::placeholder { color: var(--biat-muted-light); }
+}
+
+.sb__clear {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--biat-muted);
+  cursor: pointer;
+
+  mat-icon { font-size: 18px; width: 18px; height: 18px; }
+  &:hover { background: var(--tint-hover); color: var(--biat-text); }
+}
+
+.sb__hint { display: inline-flex; }
+
+// --- Variante « hero » (accueil) ---------------------------------------------------------------
+.sb--hero .sb__field {
+  height: 60px;
+  padding: 0 18px;
+  gap: 14px;
+  border-radius: var(--radius-lg);
+  border-width: 1.5px;
+  box-shadow: 0 1px 0 var(--biat-border);
+
+  &:focus-within { box-shadow: 0 0 0 4px var(--tint-selected); }
+}
+.sb--hero .sb__icon { font-size: 26px; width: 26px; height: 26px; color: var(--biat-primary); }
+.sb--hero .sb__input { font-size: 17px; }
+
+// --- Panneau -----------------------------------------------------------------------------------
+.sb__panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 70;
+  min-width: min(440px, 92vw);
+  max-height: min(70vh, 560px);
+  overflow-y: auto;
+  border: 1px solid var(--biat-border);
+  border-radius: var(--radius-lg);
+  background: var(--biat-white);
+  box-shadow: var(--shadow-pop);
+  animation: sb-in 0.14s var(--ease-out);
+}
+@keyframes sb-in { from { opacity: 0; transform: translateY(-4px); } }
+
+.sb__list { margin: 0; padding: 6px; list-style: none; }
+
+.sb__group {
+  padding: 10px 10px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--biat-muted);
+}
+
+.sb__option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+
+  &--active { background: var(--tint-selected); }
+  &--action .sb__option-label { color: var(--biat-primary); font-weight: 500; }
+}
+
+.sb__option-icon { color: var(--biat-muted); font-size: 20px; width: 20px; height: 20px; flex-shrink: 0; }
+.sb__option--active .sb__option-icon { color: var(--biat-primary); }
+
+.sb__option-text { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.sb__option-label { font-size: 14px; color: var(--biat-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sb__option-sub { font-size: 12px; color: var(--biat-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.sb__note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 16px 12px;
+  font-size: 13.5px;
+  color: var(--biat-muted);
+
+  &--inline { padding-top: 0; font-size: 12.5px; }
+}
+
+.sb__spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--biat-border);
+  border-top-color: var(--biat-primary);
+  border-radius: 50%;
+  animation: sb-spin 0.7s linear infinite;
+}
+@keyframes sb-spin { to { transform: rotate(360deg); } }
+
+.sb__error {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 6px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--danger-tint);
+  color: var(--danger-ink);
+  font-size: 13.5px;
+
+  mat-icon { font-size: 20px; width: 20px; height: 20px; }
+  span { flex: 1; min-width: 180px; }
+}
+
+.sb__foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 0;
+  padding: 10px 16px;
+  border-top: 1px solid var(--biat-border);
+  font-size: 12px;
+  color: var(--biat-muted);
+  background: var(--tint-surface);
+}
+.sb__foot-note { flex-basis: 100%; }
+
+@media (max-width: 767px) {
+  .sb__foot span:not(.sb__foot-note) { display: none; }
+  .sb__panel { position: fixed; top: calc(var(--topbar-height) + 4px); left: 8px; right: 8px; max-height: 70vh; }
+  .sb--hero .sb__panel { position: absolute; top: calc(100% + 8px); left: 0; right: 0; }
+}
+
+// Le raccourci clavier « / » n'a pas de sens sans clavier physique.
+@media (hover: none), (max-width: 767px) { .sb__hint { display: none; } }

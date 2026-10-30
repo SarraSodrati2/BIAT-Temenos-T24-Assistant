@@ -1,0 +1,141 @@
+:host { display: block; height: 100%; min-height: 0; }
+
+.cl { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+
+.cl__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 16px 16px 10px;
+}
+.cl__title { margin: 0; font: 600 11.5px/1.4 var(--font-ui); letter-spacing: 0.12em; text-transform: uppercase; color: var(--biat-muted); }
+
+.cl__search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 16px 6px;
+  padding: 0 10px;
+  height: 34px;
+  border: 1px solid var(--biat-border);
+  border-radius: var(--radius-md);
+  background: var(--biat-white);
+  color: var(--biat-muted);
+
+  &:focus-within { border-color: var(--biat-primary); }
+  mat-icon { font-size: 18px; width: 18px; height: 18px; }
+}
+.cl__search-input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--biat-text);
+  font: 400 13px/1 var(--font-ui);
+  &::placeholder { color: var(--biat-muted-light); }
+}
+
+.cl__body { flex: 1; min-height: 0; overflow-y: auto; padding: 0 8px 16px; }
+
+.cl__group {
+  margin: 14px 8px 4px;
+  font: 600 10.5px/1.4 var(--font-ui);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--biat-muted-light);
+}
+
+.cl__list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 1px; }
+
+.cl__item { position: relative; border-radius: var(--radius-md); }
+.cl__item--active { background: var(--tint-selected); }
+.cl__item--active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--biat-primary);
+}
+
+.cl__row { position: relative; display: flex; align-items: center; border-radius: var(--radius-md); }
+.cl__row:hover { background: var(--tint-hover); }
+.cl__item--active .cl__row:hover { background: transparent; }
+
+.cl__open {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 9px 10px 9px 14px;
+  border: 0;
+  background: transparent;
+  color: var(--biat-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+}
+.cl__item-title { font-size: 13.5px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cl__item--active .cl__item-title { color: var(--biat-primary); font-weight: 600; }
+.cl__item-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; font-size: 11.5px; color: var(--biat-muted); }
+.cl__item-meta .ui-tag { padding: 0 6px; font-size: 10.5px; }
+
+// Actions : visibles au survol ET au focus clavier (jamais réservées à la souris).
+.cl__actions {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  display: flex;
+  transform: translateY(-50%);
+  padding-left: 14px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(to right, transparent, var(--biat-bg) 14px);
+  opacity: 0;
+  transition: opacity 0.14s var(--ease-out);
+}
+.cl__row:hover .cl__actions, .cl__row:focus-within .cl__actions { opacity: 1; }
+@media (hover: none) { .cl__actions { opacity: 1; } }
+
+.cl__icon-btn {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--biat-muted);
+  cursor: pointer;
+
+  mat-icon { font-size: 18px; width: 18px; height: 18px; }
+  &:hover { background: var(--tint-selected); color: var(--biat-primary); }
+  &--danger:hover { background: var(--danger-tint); color: var(--danger-ink); }
+}
+
+.cl__edit { display: flex; align-items: center; gap: 2px; padding: 4px; }
+.cl__edit-input { min-height: 34px; padding: 0 10px; font-size: 13.5px; }
+
+.cl__confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--danger-tint);
+  color: var(--danger-ink);
+  font-size: 13px;
+}
+.cl__confirm-actions { display: flex; gap: 8px; }
+.cl__danger { border-color: transparent; background: var(--biat-danger); color: #fff; &:hover:not(:disabled) { background: var(--biat-danger); color: #fff; opacity: 0.9; } }
+
+.cl__skeletons { display: flex; flex-direction: column; gap: 4px; padding: 6px 8px; }
+.cl__skeleton { display: flex; flex-direction: column; gap: 7px; padding: 10px 6px; }
+
+.cl__none { margin: 16px 10px; font-size: 13.5px; color: var(--biat-muted); }
+.cl__link { border: 0; background: none; padding: 0; color: inherit; font: inherit; text-decoration: underline; cursor: pointer; }

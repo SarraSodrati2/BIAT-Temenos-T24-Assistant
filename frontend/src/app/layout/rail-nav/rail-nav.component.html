@@ -1,0 +1,92 @@
+<nav class="rail" [class.rail--compact]="compact()" aria-label="Navigation principale">
+  <a class="rail__brand" routerLink="/dashboard" aria-label="BIAT — Référentiel T24, retour à l'accueil">
+    <span class="rail__mark" aria-hidden="true">B</span>
+    @if (!compact()) {
+      <span class="rail__brand-text">
+        <span class="rail__brand-name">BIAT</span>
+        <span class="rail__brand-sub">Référentiel T24</span>
+      </span>
+    }
+  </a>
+
+  <div class="rail__sections">
+    @for (section of sections(); track section.label) {
+      <section class="rail__section">
+        @if (!compact()) {
+          <h2 class="rail__section-title">{{ section.label }}</h2>
+        } @else {
+          <span class="rail__section-rule" aria-hidden="true"></span>
+        }
+        <ul class="rail__list">
+          @for (item of section.items; track item.route) {
+            <li>
+              <a
+                class="rail__link"
+                [routerLink]="item.route"
+                routerLinkActive="rail__link--active"
+                ariaCurrentWhenActive="page"
+                [matTooltip]="compact() ? item.label : ''"
+                matTooltipPosition="right"
+              >
+                <mat-icon class="rail__icon" aria-hidden="true">{{ item.icon }}</mat-icon>
+                @if (!compact()) {
+                  <span class="rail__label">{{ item.label }}</span>
+                } @else {
+                  <span class="sr-only">{{ item.label }}</span>
+                }
+              </a>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
+    <!-- Liste des conversations, juste sous la dernière section (sous « Utilisateurs » pour un administrateur). -->
+    @if (!compact()) {
+      <div class="rail__conversations">
+        <app-conversation-list
+          [mode]="listMode()"
+          [activeId]="activeConversationId()"
+          (opened)="onConversationOpened()"
+          (newRequested)="newConversation()"
+          (activeDeleted)="newConversation()"
+        />
+      </div>
+    }
+  </div>
+
+  <div class="rail__foot">
+    <a
+      class="rail__link rail__link--quiet"
+      [routerLink]="about.route"
+      routerLinkActive="rail__link--active"
+      ariaCurrentWhenActive="page"
+      [matTooltip]="compact() ? about.label : ''"
+      matTooltipPosition="right"
+    >
+      <mat-icon class="rail__icon" aria-hidden="true">{{ about.icon }}</mat-icon>
+      @if (!compact()) {
+        <span class="rail__label">{{ about.label }}</span>
+      } @else {
+        <span class="sr-only">{{ about.label }}</span>
+      }
+    </a>
+
+    @if (!layout.isMobile()) {
+      <button
+        type="button"
+        class="rail__link rail__link--quiet rail__collapse"
+        (click)="layout.toggleSidebar()"
+        [attr.aria-label]="compact() ? 'Déplier la navigation' : 'Replier la navigation'"
+        [attr.aria-expanded]="!compact()"
+        [matTooltip]="compact() ? 'Déplier la navigation' : ''"
+        matTooltipPosition="right"
+      >
+        <mat-icon class="rail__icon" aria-hidden="true">{{ compact() ? 'keyboard_double_arrow_right' : 'keyboard_double_arrow_left' }}</mat-icon>
+        @if (!compact()) {
+          <span class="rail__label">Replier</span>
+        }
+      </button>
+    }
+  </div>
+</nav>

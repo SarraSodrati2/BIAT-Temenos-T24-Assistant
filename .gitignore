@@ -1,0 +1,46 @@
+# Secrets et mots de passe
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+**/settings.local.json
+**/credentials.json
+**/secrets.json
+**/application-secret.properties
+
+# Backend Java / Maven
+**/target/
+*.log
+
+# Frontend Angular / Node
+**/node_modules/
+**/dist/
+.angular/
+coverage/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+**/.idea/
+**/.claude/
+
+# Fichiers syst√®me
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Fichiers temporaires
+*.tmp
+*.bak
+*.swp
+# Fichiers locaux ‡ ne pas publier
+backend/.mvn/truststore/cacerts
+**/.project
+
+backend/src/main/resources/application-dev.properties
+
+# Documentation interne BIAT / Temenos T24 - ne pas publier
+backend/src/main/resources/repository/
+backend/src/main/resources/helptext/

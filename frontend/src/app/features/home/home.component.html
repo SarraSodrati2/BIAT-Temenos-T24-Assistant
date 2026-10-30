@@ -1,0 +1,117 @@
+<div class="ui-page home">
+  <section class="home__intro" aria-labelledby="home-title">
+    <p class="ui-eyebrow">Bonjour, {{ auth.username() }}</p>
+    <h1 id="home-title" class="ui-display home__title">
+      Retrouvez un module, une table ou un champ <em>T24</em>.
+    </h1>
+    <p class="ui-lede">
+      Le référentiel s'appuie sur la documentation T24 indexée (fichiers XML et HelpText). Cherchez un nom,
+      ou posez votre question en français à l'assistant : chaque réponse cite sa source.
+    </p>
+
+    <div class="home__search">
+      <app-search-box variant="hero" placeholder="Nom d'un module ou d'une table — ex. MD, CUSTOMER…" />
+      <p class="home__search-hint">
+        <span>Recherche par module ou par table.</span>
+        <span>Pour un champ : ouvrez sa table, ou demandez à l'assistant.</span>
+      </p>
+    </div>
+
+    <div class="home__actions">
+      <a routerLink="/assistant" class="ui-btn ui-btn--primary">
+        <mat-icon aria-hidden="true">question_answer</mat-icon>
+        Ouvrir l'assistant
+      </a>
+      <a routerLink="/modules" class="ui-btn">Parcourir les modules</a>
+      <a routerLink="/tables" class="ui-btn">Parcourir les tables</a>
+    </div>
+  </section>
+
+  <div class="home__grid">
+    <section class="home__block" aria-labelledby="home-conv">
+      <div class="home__block-head">
+        <h2 id="home-conv" class="ui-eyebrow">Reprendre une conversation</h2>
+        @if (recentConversations() && recentConversations()!.length > 0) {
+          <a routerLink="/chat-history" class="home__more">Tout l'historique</a>
+        }
+      </div>
+
+      @if (recentConversations() === null) {
+        <div class="home__skeletons" aria-busy="true">
+          @for (n of [1, 2, 3]; track n) {
+            <div class="home__skeleton">
+              <span class="ui-skeleton" style="height: 14px; width: 64%"></span>
+              <span class="ui-skeleton" style="height: 11px; width: 34%"></span>
+            </div>
+          }
+        </div>
+      } @else if (recentConversations()!.length === 0) {
+        <div class="ui-empty">
+          <mat-icon aria-hidden="true">forum</mat-icon>
+          <strong>Aucune conversation pour l'instant</strong>
+          <p>Posez votre première question à l'assistant : elle apparaîtra ici, avec un titre tiré de son contenu.</p>
+          <a routerLink="/assistant" class="ui-btn ui-btn--sm ui-btn--primary">Poser une question</a>
+        </div>
+      } @else {
+        <ul class="ui-ruled">
+          @for (chat of recentConversations(); track chat.id) {
+            <li>
+              <button type="button" class="home__row" (click)="resume(chat)">
+                <span class="home__row-main">
+                  <span class="home__row-title">{{ chat.title }}</span>
+                  <span class="home__row-meta">{{ when(chat) }} · {{ chat.messageCount }} message{{ chat.messageCount > 1 ? 's' : '' }}</span>
+                </span>
+                @if (chat.selectedModule) {
+                  <span class="ui-tag">{{ chat.selectedModule }}</span>
+                }
+                <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+              </button>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <section class="home__block" aria-labelledby="home-recent">
+      <div class="home__block-head">
+        <h2 id="home-recent" class="ui-eyebrow">Consultés récemment</h2>
+      </div>
+
+      @if (recentEntries().length === 0) {
+        <div class="ui-empty">
+          <mat-icon aria-hidden="true">history</mat-icon>
+          <strong>Rien de consulté pour l'instant</strong>
+          <p>Les modules et tables que vous ouvrez sont mémorisés ici (sur ce navigateur) pour y revenir en un clic.</p>
+        </div>
+      } @else {
+        <ul class="ui-ruled">
+          @for (entry of recentEntries(); track entry.kind + entry.name) {
+            <li>
+              <button type="button" class="home__row" (click)="openRecent(entry.kind, entry.name)">
+                <mat-icon class="home__row-icon" aria-hidden="true">{{ entry.kind === 'module' ? 'category' : 'table_chart' }}</mat-icon>
+                <span class="home__row-main">
+                  <span class="home__row-title ui-mono">{{ entry.name }}</span>
+                  <span class="home__row-meta">{{ entry.kind === 'module' ? 'Module' : 'Table' }}</span>
+                </span>
+                <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+              </button>
+            </li>
+          }
+        </ul>
+      }
+
+      <h2 class="ui-eyebrow home__sub">Modules couverts par l'assistant</h2>
+      <div class="home__chips" role="group" aria-label="Modules couverts par l'assistant">
+        @for (code of assistantModules; track code) {
+          <button type="button" class="home__chip ui-mono" (click)="openModule(code)">{{ code }}</button>
+        }
+      </div>
+    </section>
+  </div>
+
+  <footer class="home__foot" aria-label="Contenu du référentiel">
+    <span><strong>{{ formatCount(tableCount()) }}</strong> tables indexées</span>
+    <span class="home__foot-sep" aria-hidden="true">·</span>
+    <span><strong>{{ formatCount(moduleCount()) }}</strong> modules</span>
+  </footer>
+</div>

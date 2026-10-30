@@ -1,0 +1,29 @@
+<a class="shell__skip" href="#contenu" (click)="focusMain($event)">Aller au contenu</a>
+
+<div class="shell" [class.shell--compact]="compact()">
+  <div class="shell__rail" [class.shell__rail--open]="drawerOpen()">
+    <app-rail-nav />
+  </div>
+
+  @if (drawerOpen()) {
+    <div class="shell__scrim" (click)="layout.toggleSidebar()" aria-hidden="true"></div>
+  }
+
+  <div class="shell__main">
+    <app-topbar />
+
+    @if (backend.status() === 'offline') {
+      <div class="shell__offline" role="alert">
+        <mat-icon aria-hidden="true">cloud_off</mat-icon>
+        <span>Le serveur est injoignable : les données affichées peuvent être incomplètes et l'assistant ne répondra pas.</span>
+        <button type="button" class="ui-btn ui-btn--sm" (click)="backend.check()">Réessayer</button>
+      </div>
+    }
+
+    <main id="contenu" class="shell__content" tabindex="-1">
+      <router-outlet />
+    </main>
+
+    <app-bottom-nav class="shell__bottom" />
+  </div>
+</div>

@@ -1,0 +1,76 @@
+<app-auth-layout>
+  <h1 class="auth-card__title">Créer un compte</h1>
+  <p class="auth-card__sub">Accédez à l'assistant de données T24. Votre compte sera créé avec le profil Consultant.</p>
+
+  <form #registerForm="ngForm" (ngSubmit)="submit(registerForm)" class="auth-card__form">
+    <mat-form-field appearance="outline" class="auth-card__field">
+      <mat-label>Nom d'utilisateur</mat-label>
+      <input matInput name="username" [(ngModel)]="username" required autocomplete="username" [disabled]="loading()" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="auth-card__field">
+      <mat-label>Email</mat-label>
+      <input matInput type="email" name="email" [(ngModel)]="email" required email autocomplete="email" [disabled]="loading()" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="auth-card__field">
+      <mat-label>Mot de passe</mat-label>
+      <input
+        matInput
+        type="password"
+        name="password"
+        [(ngModel)]="password"
+        required
+        minlength="8"
+        autocomplete="new-password"
+        [disabled]="loading()"
+      />
+      <mat-hint>8 caractères minimum</mat-hint>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="auth-card__field">
+      <mat-label>Confirmer le mot de passe</mat-label>
+      <input
+        matInput
+        type="password"
+        name="confirmPassword"
+        [(ngModel)]="confirmPassword"
+        required
+        autocomplete="new-password"
+        [disabled]="loading()"
+      />
+    </mat-form-field>
+
+    @if (errorMessage()) {
+      <p class="auth-card__error" role="alert">
+        <mat-icon aria-hidden="true">error_outline</mat-icon>
+        <span>{{ errorMessage() }}</span>
+      </p>
+    }
+    @if (successMessage()) {
+      <p class="auth-card__success" role="status">
+        <mat-icon aria-hidden="true">check_circle</mat-icon>
+        <span>{{ successMessage() }}</span>
+      </p>
+    }
+
+    <button
+      mat-flat-button
+      color="primary"
+      type="submit"
+      class="auth-card__submit"
+      [disabled]="registerForm.invalid || loading()"
+    >
+      @if (loading()) {
+        <mat-progress-spinner mode="indeterminate" diameter="20" />
+      } @else {
+        Créer mon compte
+      }
+    </button>
+  </form>
+
+  <p class="auth-card__switch">
+    Vous avez déjà un compte ?
+    <a routerLink="/login">Se connecter</a>
+  </p>
+</app-auth-layout>

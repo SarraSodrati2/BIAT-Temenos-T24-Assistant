@@ -1,0 +1,94 @@
+<div class="sb" [class.sb--hero]="variant === 'hero'" [class.sb--open]="showPanel()">
+  <label class="sr-only" [attr.for]="uid + '-input'">Rechercher un module ou une table T24</label>
+
+  <div class="sb__field">
+    <mat-icon class="sb__icon" aria-hidden="true">search</mat-icon>
+    <input
+      #field
+      class="sb__input"
+      type="text"
+      role="combobox"
+      autocomplete="off"
+      autocapitalize="off"
+      spellcheck="false"
+      aria-autocomplete="list"
+      [id]="uid + '-input'"
+      [attr.aria-expanded]="showPanel()"
+      [attr.aria-controls]="uid + '-list'"
+      [attr.aria-activedescendant]="activeIndex() >= 0 ? options()[activeIndex()]?.id : null"
+      [placeholder]="placeholder"
+      [ngModel]="query()"
+      (ngModelChange)="onInput($event)"
+      (keydown)="onKeydown($event)"
+      (focus)="onFocus()"
+    />
+    @if (query()) {
+      <button type="button" class="sb__clear" (click)="clear()" aria-label="Effacer la recherche">
+        <mat-icon aria-hidden="true">close</mat-icon>
+      </button>
+    } @else if (variant === 'compact') {
+      <span class="sb__hint" aria-hidden="true"><kbd class="ui-kbd">/</kbd></span>
+    }
+  </div>
+
+  @if (showPanel()) {
+    <div class="sb__panel">
+      <ul class="sb__list" role="listbox" [id]="uid + '-list'" aria-label="Résultats de recherche">
+        @for (group of groups(); track group.title) {
+          <li role="presentation" class="sb__group">{{ group.title }}</li>
+          @for (option of group.options; track option.id) {
+            <li
+              role="option"
+              class="sb__option"
+              [id]="option.id"
+              [class.sb__option--active]="activeIndex() === option.idx"
+              [class.sb__option--action]="option.kind === 'ask' || option.kind === 'all-tables'"
+              [attr.aria-selected]="activeIndex() === option.idx"
+              (mousedown)="$event.preventDefault()"
+              (click)="option.go()"
+              (mouseenter)="activeIndex.set(option.idx)"
+            >
+              <mat-icon class="sb__option-icon" aria-hidden="true">{{ option.icon }}</mat-icon>
+              <span class="sb__option-text">
+                <span class="sb__option-label" [class.ui-mono]="option.kind === 'module' || option.kind === 'table'">{{ option.label }}</span>
+                @if (option.sublabel) {
+                  <span class="sb__option-sub">{{ option.sublabel }}</span>
+                }
+              </span>
+              @if (option.match) {
+                <span class="ui-tag" [class.ui-tag--ok]="option.match === 'exact'" [attr.title]="matchTitle(option.match)">{{ matchLabel(option.match) }}</span>
+              }
+            </li>
+          }
+        }
+      </ul>
+
+      @if (!hasQuery()) {
+        @if (groups().length === 0) {
+          <p class="sb__note">Saisissez le nom d'un module (ex. <span class="ui-mono">MD</span>) ou d'une table (ex. <span class="ui-mono">CUSTOMER</span>). Au moins {{ minLength }} caractères.</p>
+        }
+      } @else if (loading() && !results()) {
+        <p class="sb__note" role="status"><span class="sb__spinner" aria-hidden="true"></span> Recherche en cours…</p>
+      } @else if (results()?.failed) {
+        <div class="sb__error" role="alert">
+          <mat-icon aria-hidden="true">cloud_off</mat-icon>
+          <span>La recherche est momentanément indisponible. Vérifiez la connexion au serveur.</span>
+          <button type="button" class="ui-btn ui-btn--sm" (mousedown)="$event.preventDefault()" (click)="retry()">Réessayer</button>
+        </div>
+      } @else if (results() && results()!.modules.length === 0 && results()!.tables.length === 0) {
+        <p class="sb__note" role="status">Aucun module ni table ne correspond à « {{ results()!.query }} ».</p>
+      }
+
+      @if (loading() && results()) {
+        <p class="sb__note sb__note--inline" role="status"><span class="sb__spinner" aria-hidden="true"></span> Mise à jour…</p>
+      }
+
+      <p class="sb__foot">
+        <span><kbd class="ui-kbd">↑</kbd> <kbd class="ui-kbd">↓</kbd> naviguer</span>
+        <span><kbd class="ui-kbd">Entrée</kbd> ouvrir</span>
+        <span><kbd class="ui-kbd">Échap</kbd> fermer</span>
+        <span class="sb__foot-note">Un champ se trouve dans sa table, ou via l'assistant.</span>
+      </p>
+    </div>
+  }
+</div>

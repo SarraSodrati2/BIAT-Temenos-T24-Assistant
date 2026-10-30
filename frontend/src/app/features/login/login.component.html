@@ -1,0 +1,70 @@
+<app-auth-layout>
+  <h1 class="auth-card__title">Connexion</h1>
+  <p class="auth-card__sub">Accédez à votre espace T24 Assistant.</p>
+
+  <form #loginForm="ngForm" (ngSubmit)="submit(loginForm)" class="auth-card__form">
+    <mat-form-field appearance="outline" class="auth-card__field">
+      <mat-label>Nom d'utilisateur</mat-label>
+      <mat-icon matPrefix aria-hidden="true">person_outline</mat-icon>
+      <input
+        matInput
+        name="username"
+        [(ngModel)]="username"
+        required
+        autocomplete="username"
+        [disabled]="loading()"
+      />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="auth-card__field">
+      <mat-label>Mot de passe</mat-label>
+      <mat-icon matPrefix aria-hidden="true">lock_outline</mat-icon>
+      <input
+        matInput
+        [type]="hidePassword() ? 'password' : 'text'"
+        name="password"
+        [(ngModel)]="password"
+        required
+        autocomplete="current-password"
+        [disabled]="loading()"
+      />
+      <button
+        type="button"
+        mat-icon-button
+        matSuffix
+        class="auth-card__eye"
+        (click)="togglePasswordVisibility()"
+        [attr.aria-label]="hidePassword() ? 'Afficher le mot de passe' : 'Masquer le mot de passe'"
+        [attr.aria-pressed]="!hidePassword()"
+      >
+        <mat-icon aria-hidden="true">{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+      </button>
+    </mat-form-field>
+
+    @if (errorMessage()) {
+      <p class="auth-card__error" role="alert">
+        <mat-icon aria-hidden="true">error_outline</mat-icon>
+        <span>{{ errorMessage() }}</span>
+      </p>
+    }
+
+    <button
+      mat-flat-button
+      color="primary"
+      type="submit"
+      class="auth-card__submit"
+      [disabled]="loginForm.invalid || loading()"
+    >
+      @if (loading()) {
+        <mat-progress-spinner mode="indeterminate" diameter="20" />
+      } @else {
+        Se connecter
+      }
+    </button>
+  </form>
+
+  <p class="auth-card__switch">
+    Vous n'avez pas de compte ?
+    <a routerLink="/register">Créer un compte</a>
+  </p>
+</app-auth-layout>

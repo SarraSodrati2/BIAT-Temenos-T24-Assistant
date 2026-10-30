@@ -1,0 +1,46 @@
+<div class="auth">
+  <aside class="auth__brand" aria-label="Présentation">
+    <div class="auth__logo">
+      <span class="auth__mark" aria-hidden="true">B</span>
+      <span class="auth__logo-text">
+        <span class="auth__bank">BIAT</span>
+        <span class="auth__tagline">Innovation &amp; Technology</span>
+      </span>
+    </div>
+
+    <div class="auth__statement">
+      <p class="ui-eyebrow">Référentiel T24</p>
+      <p class="ui-display auth__headline">La documentation T24, <em>enfin simple à trouver.</em></p>
+      <p class="auth__text">
+        Cherchez un module ou une table, ou posez votre question en français : chaque réponse de
+        l'assistant s'appuie sur la documentation indexée et cite sa source.
+      </p>
+    </div>
+
+    <p class="auth__foot">BIAT IT — T24 Assistant · Système interne</p>
+  </aside>
+
+  <main class="auth__main">
+    <button
+      type="button"
+      class="auth__theme"
+      role="switch"
+      [attr.aria-checked]="theme.isDark()"
+      (click)="theme.toggle()"
+      [matTooltip]="theme.isDark() ? 'Passer en mode clair' : 'Passer en mode sombre'"
+      [attr.aria-label]="theme.isDark() ? 'Mode sombre activé — passer en mode clair' : 'Mode clair activé — passer en mode sombre'"
+    >
+      <mat-icon aria-hidden="true">{{ theme.isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+      <span>{{ theme.isDark() ? 'Mode clair' : 'Mode sombre' }}</span>
+    </button>
+
+    <div class="auth__logo auth__logo--compact" aria-hidden="true">
+      <span class="auth__mark">B</span>
+      <span class="auth__bank">BIAT</span>
+    </div>
+
+    <div class="auth__card">
+      <ng-content />
+    </div>
+  </main>
+</div>

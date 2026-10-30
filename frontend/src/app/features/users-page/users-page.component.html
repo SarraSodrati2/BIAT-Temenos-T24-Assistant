@@ -1,0 +1,99 @@
+<div class="ui-page users-page">
+  <header class="users-page__header">
+    <div>
+      <p class="ui-eyebrow">Administration</p>
+      <h1 class="ui-display users-page__title">Utilisateurs</h1>
+      <p class="users-page__count" aria-live="polite">{{ filteredUsers().length }} utilisateur{{ filteredUsers().length > 1 ? 's' : '' }}</p>
+    </div>
+
+    <div class="users-page__actions">
+      <div class="users-page__search">
+        <mat-icon aria-hidden="true">search</mat-icon>
+        <input type="text" placeholder="Rechercher un utilisateur…" aria-label="Rechercher un utilisateur" name="userSearch" [(ngModel)]="searchTerm" (ngModelChange)="onSearch()" />
+      </div>
+      <button mat-flat-button color="primary" type="button" (click)="openCreateDialog()">
+        <mat-icon aria-hidden="true">person_add</mat-icon>
+        Nouvel utilisateur
+      </button>
+    </div>
+  </header>
+
+  <div class="users-page__table-wrapper">
+    @if (users() === null) {
+      <div class="users-page__loading">
+        <mat-spinner diameter="32" />
+      </div>
+    } @else {
+      <div class="users-page__table-scroll">
+      <table mat-table [dataSource]="pagedUsers()" class="users-page__table">
+        <ng-container matColumnDef="username">
+          <th mat-header-cell *matHeaderCellDef>Nom d'utilisateur</th>
+          <td mat-cell *matCellDef="let user">
+            <div class="users-page__identity">
+              <span class="users-page__avatar" [class.users-page__avatar--admin]="user.role !== 'CONSULTANT'">
+                {{ user.username.charAt(0).toUpperCase() }}
+              </span>
+              {{ user.username }}
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef>Email</th>
+          <td mat-cell *matCellDef="let user">{{ user.email }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="role">
+          <th mat-header-cell *matHeaderCellDef>Rôle</th>
+          <td mat-cell *matCellDef="let user">
+            <span class="role-chip" [class.role-chip--admin]="user.role !== 'CONSULTANT'">{{ user.role }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="isActive">
+          <th mat-header-cell *matHeaderCellDef>Statut</th>
+          <td mat-cell *matCellDef="let user">
+            <span class="status-pill" [class.status-pill--active]="user.isActive">
+              <span class="status-dot" [class.status-dot--active]="user.isActive"></span>
+              {{ user.isActive ? 'Actif' : 'Inactif' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let user">
+            <div class="users-page__row-actions">
+            <!-- Un ADMIN ne gère que des CONSULTANT (backend autoritaire) : les actions sont
+                 masquées sur les lignes ADMIN/SUPER_ADMIN pour ne pas proposer une action refusée. -->
+            @if (auth.hasRole('SUPER_ADMIN') || user.role === 'CONSULTANT') {
+              <button mat-icon-button type="button" (click)="openEditDialog(user)" aria-label="Modifier {{ user.username }}">
+                <mat-icon aria-hidden="true">edit</mat-icon>
+              </button>
+              <button mat-icon-button type="button" (click)="deleteUser(user)" aria-label="Supprimer {{ user.username }}">
+                <mat-icon aria-hidden="true">delete</mat-icon>
+              </button>
+            }
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+      </div>
+
+      @if (filteredUsers().length === 0) {
+        <p class="users-page__empty">Aucun utilisateur ne correspond à votre recherche.</p>
+      }
+
+      <mat-paginator
+        [length]="filteredUsers().length"
+        [pageIndex]="pageIndex"
+        [pageSize]="pageSize"
+        [pageSizeOptions]="[10, 20, 50]"
+        (page)="onPage($event)"
+      />
+    }
+  </div>
+</div>

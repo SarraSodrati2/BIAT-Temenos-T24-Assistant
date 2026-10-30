@@ -1,0 +1,10 @@
+<div class="ws">
+  <!-- La liste des conversations est dans la colonne de navigation, sous « Utilisateurs » (RailNavComponent). -->
+  <section class="ws__chat" aria-label="Conversation">
+    <app-chatbot-page
+      [conversationTitle]="title()"
+      [prefill]="q"
+      (openConversations)="layout.openDrawer()"
+    />
+  </section>
+</div>

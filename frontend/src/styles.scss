@@ -1,0 +1,447 @@
+// Custom Theming for Angular Material
+// For more information: https://material.angular.io/guide/theming
+@use '@angular/material' as mat;
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@include mat.core();
+
+// BIAT-branded M3 theme: azure/blue Material palettes sit closest to the BIAT
+// blues, and are then pinned to the exact brand hex values via CSS custom
+// properties below so every Material component matches the brand exactly.
+$frontend-theme: mat.define-theme((
+  color: (
+    theme-type: light,
+    primary: mat.$azure-palette,
+    tertiary: mat.$blue-palette,
+  ),
+  typography: (
+    // unquote() : sans lui Sass émet la liste entre guillemets, ce qui donne un font-family invalide.
+    plain-family: unquote("'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif"),
+    brand-family: unquote("'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif"),
+  ),
+  density: (
+    scale: 0,
+  )
+));
+
+// Thème sombre : mêmes rôles de tokens que $frontend-theme ci-dessus, redéfinis en ".dark-theme"
+// (classe posée sur <html> par ThemeService) plutôt qu'un second theme-type basculé globalement —
+// permet de garder $frontend-theme (light) comme thème de base et de ne surcharger que les
+// composants Material effectivement rendus pendant que ".dark-theme" est actif.
+$frontend-dark-theme: mat.define-theme((
+  color: (
+    theme-type: dark,
+    primary: mat.$azure-palette,
+    tertiary: mat.$blue-palette,
+  ),
+  density: (
+    scale: 0,
+  )
+));
+
+:root {
+  @include mat.all-component-themes($frontend-theme);
+  // La hiérarchie typographique Material (h1–h6 / .mat-typography) n'est plus incluse : elle imposait ses
+  // propres tailles aux titres. La typographie de l'application est définie plus bas (--font-*, .ui-*).
+
+  // BIAT brand palette
+  --biat-primary: #1D4E89;
+  --biat-secondary: #2D6FB7;
+  --biat-light: #EAF2FB;
+  --biat-bg: #F8FAFC;
+  --biat-white: #FFFFFF;
+  --biat-text: #1E293B;
+  // Tokens sémantiques introduits avec le mode sombre : reprennent les gris jusqu'ici codés en dur
+  // dans les composants (bordures #E2E8F0, texte secondaire #64748B/#94A3B8) — nouveaux composants
+  // à préférer à ces valeurs brutes pour rester theme-aware automatiquement.
+  --biat-border: #E2E8F0;
+  --biat-muted: #64748B;
+  --biat-muted-light: #94A3B8;
+
+  // Pin Material's system tokens to the exact BIAT brand colors
+  --mat-sys-primary: var(--biat-primary);
+  --mat-sys-on-primary: var(--biat-white);
+  --mat-sys-primary-container: var(--biat-light);
+  --mat-sys-on-primary-container: var(--biat-primary);
+  --mat-sys-secondary: var(--biat-secondary);
+}
+
+.dark-theme {
+  @include mat.all-component-colors($frontend-dark-theme);
+
+  --biat-primary: #4A8FD6;
+  --biat-secondary: #6FB0E8;
+  --biat-light: #1E3A5F;
+  --biat-bg: #0F172A;
+  --biat-white: #1E293B;
+  --biat-text: #E2E8F0;
+  --biat-border: #334155;
+  --biat-muted: #94A3B8;
+  --biat-muted-light: #64748B;
+
+  --mat-sys-primary: var(--biat-primary);
+  --mat-sys-on-primary: #0F172A;
+  --mat-sys-primary-container: var(--biat-light);
+  --mat-sys-on-primary-container: var(--biat-primary);
+  --mat-sys-secondary: var(--biat-secondary);
+}
+
+// ================================================================================================
+// Identité visuelle « Référentiel » — tokens NON colorimétriques + composants partagés.
+// Aucune couleur du thème (clair ni sombre) n'est redéfinie ici : tout passe par les variables
+// --biat-* existantes ; les teintes intermédiaires sont dérivées avec color-mix() à partir d'elles.
+// ================================================================================================
+:root {
+  --font-ui: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'IBM Plex Serif', Georgia, 'Times New Roman', serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Consolas, 'Liberation Mono', monospace;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
+
+  --rail-width: 264px;
+  --rail-width-collapsed: 72px;
+  --topbar-height: 60px;
+  --bottomnav-height: 60px;
+  --content-max: 1120px;
+
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --shadow-pop: 0 18px 40px -12px rgba(15, 23, 42, 0.32), 0 2px 6px rgba(15, 23, 42, 0.12);
+
+  // Couleurs sémantiques d'état (déjà utilisées en dur dans l'application avant la refonte) —
+  // identiques dans les deux thèmes.
+  --biat-danger: #DC2626;
+  --biat-success: #16A34A;
+
+  // Teintes dérivées des variables de thème (suivent automatiquement clair/sombre).
+  --tint-hover: color-mix(in srgb, var(--biat-primary) 7%, transparent);
+  --tint-selected: color-mix(in srgb, var(--biat-primary) 13%, transparent);
+  --tint-surface: color-mix(in srgb, var(--biat-primary) 4%, var(--biat-white));
+  --danger-ink: color-mix(in srgb, var(--biat-danger) 78%, var(--biat-text));
+  --danger-tint: color-mix(in srgb, var(--biat-danger) 10%, var(--biat-white));
+  --success-ink: color-mix(in srgb, var(--biat-success) 70%, var(--biat-text));
+  --success-tint: color-mix(in srgb, var(--biat-success) 12%, var(--biat-white));
+}
+
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 15px;
+  line-height: 1.55;
+  background: var(--biat-bg);
+  color: var(--biat-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+* { box-sizing: border-box; }
+
+h1, h2, h3, h4, h5, h6 { margin: 0; font-weight: 600; line-height: 1.25; }
+p { margin: 0 0 1em; }
+
+::selection { background: var(--tint-selected); }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb {
+  background: var(--biat-border);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--biat-muted-light); background-clip: content-box; }
+
+// Focus clavier visible et cohérent partout (accessibilité).
+:focus-visible {
+  outline: 2px solid var(--biat-primary);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+// --- Composants partagés (préfixe ui-) ---------------------------------------------------------
+
+.ui-page {
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 32px 32px 64px;
+
+  @media (max-width: 767px) { padding: 20px 16px 48px; }
+}
+
+.ui-eyebrow {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--biat-muted);
+}
+
+.ui-display {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 1.12;
+  color: var(--biat-text);
+}
+
+.ui-lede {
+  margin: 0;
+  max-width: 62ch;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--biat-muted);
+}
+
+.ui-mono { font-family: var(--font-mono); font-size: 0.92em; letter-spacing: -0.01em; }
+
+.ui-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--biat-border);
+  border-radius: var(--radius-md);
+  background: var(--biat-white);
+  color: var(--biat-text);
+  font: 500 14px/1 var(--font-ui);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.16s var(--ease-out), border-color 0.16s var(--ease-out), color 0.16s var(--ease-out);
+
+  mat-icon { font-size: 18px; width: 18px; height: 18px; }
+
+  &:hover:not(:disabled) { background: var(--tint-hover); border-color: var(--biat-primary); color: var(--biat-primary); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  &--primary {
+    background: var(--biat-primary);
+    border-color: var(--biat-primary);
+    color: var(--biat-bg);
+    &:hover:not(:disabled) { background: color-mix(in srgb, var(--biat-primary) 86%, var(--biat-text)); color: var(--biat-bg); }
+  }
+
+  &--quiet {
+    border-color: transparent;
+    background: transparent;
+    color: var(--biat-muted);
+  }
+
+  &--sm { min-height: 32px; padding: 0 12px; font-size: 13px; }
+}
+
+.ui-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border: 1px solid var(--biat-border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--biat-muted);
+  font: 500 11.5px/1.5 var(--font-mono);
+  letter-spacing: 0;
+  white-space: nowrap;
+
+  &--accent { border-color: transparent; background: var(--tint-selected); color: var(--biat-primary); }
+  &--ok { border-color: transparent; background: var(--success-tint); color: var(--success-ink); }
+  &--warn { border-color: transparent; background: var(--danger-tint); color: var(--danger-ink); }
+}
+
+.ui-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 28px 24px;
+  border: 1px dashed var(--biat-border);
+  border-radius: var(--radius-lg);
+  color: var(--biat-muted);
+
+  mat-icon { font-size: 28px; width: 28px; height: 28px; color: var(--biat-muted-light); }
+  strong { font-size: 15px; color: var(--biat-text); font-weight: 600; }
+  p { margin: 0; font-size: 14px; max-width: 52ch; }
+}
+
+.ui-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--danger-tint);
+  color: var(--danger-ink);
+  font-size: 14px;
+
+  mat-icon { font-size: 20px; width: 20px; height: 20px; flex-shrink: 0; }
+}
+
+.ui-skeleton {
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, var(--biat-border), color-mix(in srgb, var(--biat-border) 40%, transparent), var(--biat-border));
+  background-size: 200% 100%;
+  animation: ui-shimmer 1.4s linear infinite;
+}
+@keyframes ui-shimmer { to { background-position: -200% 0; } }
+
+.ui-kbd {
+  display: inline-block;
+  padding: 1px 6px;
+  border: 1px solid var(--biat-border);
+  border-bottom-width: 2px;
+  border-radius: var(--radius-sm);
+  font: 500 11px/1.4 var(--font-mono);
+  color: var(--biat-muted);
+}
+
+// Liste « réglée » : lignes fines séparées par des filets, sans cartes — signature du référentiel.
+.ui-ruled {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--biat-border);
+
+  > li { border-bottom: 1px solid var(--biat-border); }
+}
+
+.ui-input {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid var(--biat-border);
+  border-radius: var(--radius-md);
+  background: var(--biat-white);
+  color: var(--biat-text);
+  font: 400 15px/1.4 var(--font-ui);
+  transition: border-color 0.16s var(--ease-out), box-shadow 0.16s var(--ease-out);
+
+  &::placeholder { color: var(--biat-muted-light); }
+  &:hover { border-color: var(--biat-muted-light); }
+  &:focus { outline: none; border-color: var(--biat-primary); box-shadow: 0 0 0 3px var(--tint-selected); }
+}
+
+// --- Contenu structuré d'une réponse de l'assistant (HTML injecté via [innerHTML] par formatAnswer, donc
+// hors encapsulation des composants) — utilisé par la conversation et par l'historique ---
+.answer {
+  .msg-champ {
+    display: inline-block;
+    margin: 0 0 6px;
+    padding: 4px 12px;
+    border-radius: var(--radius-sm);
+    background: var(--tint-selected);
+    color: var(--biat-primary);
+    font: 500 15px/1.5 var(--font-mono);
+    strong { font-weight: 500; }
+  }
+
+  .msg-heading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 18px 0 6px;
+    font: 600 11px/1.4 var(--font-ui);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--biat-muted);
+
+    &::after { content: ''; flex: 1; height: 1px; background: var(--biat-border); }
+  }
+
+  .msg-line { margin: 0 0 8px; }
+  .msg-fonction { font-size: 16px; line-height: 1.7; color: var(--biat-text); }
+  .msg-exemple {
+    padding: 10px 14px;
+    border-left: 3px solid var(--biat-primary);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    background: var(--tint-surface);
+  }
+  .msg-source code { padding: 2px 8px; border: 1px solid var(--biat-border); background: transparent; }
+
+  code {
+    padding: 1px 6px;
+    border-radius: var(--radius-sm);
+    background: var(--tint-selected);
+    color: var(--biat-primary);
+    font: 500 0.88em/1.4 var(--font-mono);
+  }
+  .msg-ref {
+    cursor: pointer;
+    text-decoration: underline dotted;
+    text-underline-offset: 3px;
+    &:hover { background: var(--biat-primary); color: var(--biat-bg); }
+  }
+
+  // Petite zone encadrée pour l'Extrait documentaire (mêmes teintes/rayon que le reste de l'appli,
+  // juste un cadre complet plutôt qu'une simple bordure gauche) — demande explicite du 2026-09-29.
+  .msg-quote {
+    margin: 4px 0 8px;
+    padding: 8px 14px;
+    border: 1px solid var(--biat-border);
+    border-radius: var(--radius-sm);
+    background: var(--tint-surface);
+    font: italic 400 15px/1.7 var(--font-display);
+    color: var(--biat-muted);
+  }
+  .msg-quote__more { margin-top: 6px; font: normal 400 13px/1.6 var(--font-ui); }
+  .msg-quote__more summary { cursor: pointer; color: var(--biat-primary); }
+  .msg-quote__more span { display: block; margin-top: 6px; font: italic 400 15px/1.7 var(--font-display); color: var(--biat-muted); }
+
+  .msg-list { margin: 6px 0 10px; padding-left: 20px; li { margin: 3px 0; } }
+  .msg-list--nested { margin: 2px 0 4px; padding-left: 18px; font-size: 14px; color: var(--biat-muted); }
+  .msg-rule { margin: 20px 0; border: 0; border-top: 1px solid var(--biat-border); }
+
+  .msg-code {
+    margin: 8px 0;
+    padding: 12px 14px;
+    overflow-x: auto;
+    border-radius: var(--radius-md);
+    background: var(--tint-surface);
+    border: 1px solid var(--biat-border);
+    code { padding: 0; background: none; color: var(--biat-text); font-size: 13px; }
+  }
+
+  .msg-table-wrap { margin: 8px 0; overflow-x: auto; }
+  .msg-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    th, td { padding: 8px 12px; border-bottom: 1px solid var(--biat-border); text-align: left; vertical-align: top; }
+    th { font-weight: 600; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--biat-muted); }
+  }
+}
+
+// Paginateurs : fond transparent pour épouser la surface du conteneur (clair comme sombre).
+.mat-mdc-paginator {
+  --mat-paginator-container-background-color: transparent;
+  border-top: 1px solid var(--biat-border);
+}

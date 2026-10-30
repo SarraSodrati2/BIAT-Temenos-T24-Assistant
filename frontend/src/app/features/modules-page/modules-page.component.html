@@ -1,0 +1,163 @@
+<div class="ui-page mp">
+  <header class="mp__head">
+    <p class="ui-eyebrow">Référentiel T24</p>
+    <h1 class="ui-display mp__title">Modules</h1>
+    <p class="ui-lede">
+      @if (modules() !== null && !loadFailed()) {
+        {{ modules()!.length }} modules indexés.
+      }
+      Ouvrez un module pour voir les tables documentées qui le composent.
+    </p>
+    <div class="mp__filter">
+      <label class="sr-only" for="mp-filter">Filtrer les modules par code</label>
+      <input
+        id="mp-filter"
+        class="ui-input"
+        type="text"
+        placeholder="Filtrer par code de module — ex. LD, MD…"
+        autocomplete="off"
+        [ngModel]="filter()"
+        (ngModelChange)="filter.set($event)"
+      />
+      @if (modules() !== null) {
+        <span class="mp__count" aria-live="polite">{{ filtered().length }} résultat{{ filtered().length > 1 ? 's' : '' }}</span>
+      }
+    </div>
+  </header>
+
+  <div class="mp__body">
+    @if (modules() === null) {
+      <div class="mp__skeletons" aria-busy="true" aria-label="Chargement des modules">
+        @for (n of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]; track n) {
+          <span class="ui-skeleton" style="height: 34px"></span>
+        }
+      </div>
+    } @else if (loadFailed()) {
+      <div class="ui-error" role="alert">
+        <mat-icon aria-hidden="true">error_outline</mat-icon>
+        <span>Impossible de charger les modules. Vérifiez la connexion au serveur.
+          <button type="button" class="mp__link" (click)="loadModules()">Réessayer</button></span>
+      </div>
+    } @else if (filtered().length === 0) {
+      <div class="ui-empty">
+        <mat-icon aria-hidden="true">search_off</mat-icon>
+        <strong>Aucun module ne correspond à « {{ filter() }} »</strong>
+        <p>Vérifiez le code saisi, ou utilisez la recherche globale pour trouver une table.</p>
+      </div>
+    } @else {
+      <nav class="mp__letters" aria-label="Aller à une initiale">
+        @for (group of groups(); track group.letter) {
+          <a class="mp__letter" [href]="'#lettre-' + (group.letter === '#' ? 'autre' : group.letter)" (click)="$event.preventDefault(); scrollToLetter(group.letter)">{{ group.letter }}</a>
+        }
+      </nav>
+
+      @for (group of groups(); track group.letter) {
+        <section class="mp__group" [id]="'lettre-' + (group.letter === '#' ? 'autre' : group.letter)">
+          <h2 class="mp__group-letter" aria-label="Modules commençant par {{ group.letter }}">{{ group.letter }}</h2>
+          <ul class="mp__list">
+            @for (module of group.modules; track module.id) {
+              <li>
+                <button
+                  type="button"
+                  class="mp__module ui-mono"
+                  [class.mp__module--active]="selected()?.id === module.id"
+                  [attr.aria-pressed]="selected()?.id === module.id"
+                  (click)="select(module)"
+                >
+                  {{ module.nomModule }}
+                </button>
+              </li>
+            }
+          </ul>
+        </section>
+      }
+    }
+  </div>
+
+  @if (selected(); as module) {
+    <div class="mp__scrim" (click)="close()" aria-hidden="true"></div>
+    <aside class="mp__detail" role="dialog" aria-modal="false" [attr.aria-label]="'Module ' + module.nomModule">
+      <header class="mp__detail-head">
+        <div>
+          <p class="ui-eyebrow">Module</p>
+          <h2 class="mp__detail-title ui-mono">{{ module.nomModule }}</h2>
+        </div>
+        <button type="button" class="mp__close" (click)="close()" aria-label="Fermer le panneau du module">
+          <mat-icon aria-hidden="true">close</mat-icon>
+        </button>
+      </header>
+
+      <div class="mp__detail-actions">
+        @if (isAssistantModule(module.nomModule)) {
+          <button type="button" class="ui-btn ui-btn--sm ui-btn--primary" (click)="askAssistant(module)">
+            <mat-icon aria-hidden="true">question_answer</mat-icon>
+            Interroger l'assistant
+          </button>
+        }
+        <a class="ui-btn ui-btn--sm" [routerLink]="['/tables']" [queryParams]="{ search: module.nomModule }">
+          <mat-icon aria-hidden="true">table_chart</mat-icon>
+          Rechercher dans les tables
+        </a>
+      </div>
+
+      @if (tables() === null) {
+        <div class="mp__detail-loading" aria-busy="true">
+          @for (n of [1, 2, 3, 4, 5]; track n) {
+            <span class="ui-skeleton" style="height: 18px"></span>
+          }
+        </div>
+      } @else if (tablesFailed() && tables()!.length === 0) {
+        <div class="ui-error" role="alert">
+          <mat-icon aria-hidden="true">error_outline</mat-icon>
+          <span>Impossible de charger les tables de ce module.
+            <button type="button" class="mp__link" (click)="select(module)">Réessayer</button></span>
+        </div>
+      } @else if (tablesTotal() === 0) {
+        <div class="ui-empty">
+          <mat-icon aria-hidden="true">table_chart</mat-icon>
+          <strong>Aucune table documentée</strong>
+          <p>Aucune table n'est indexée pour ce module dans la documentation actuelle.</p>
+        </div>
+      } @else {
+        <p class="mp__detail-count">{{ tablesTotal() }} table{{ tablesTotal() > 1 ? 's' : '' }} documentée{{ tablesTotal() > 1 ? 's' : '' }}</p>
+        <label class="sr-only" for="mp-table-filter">Filtrer les tables affichées</label>
+        <input
+          id="mp-table-filter"
+          class="ui-input mp__table-filter"
+          type="text"
+          placeholder="Filtrer les tables chargées…"
+          autocomplete="off"
+          [ngModel]="tableFilter()"
+          (ngModelChange)="tableFilter.set($event)"
+        />
+
+        @if (visibleTables().length === 0) {
+          <p class="mp__none">Aucune table chargée ne correspond à « {{ tableFilter() }} ».@if (hasMoreTables()) { Chargez la suite pour élargir la recherche. }</p>
+        } @else {
+          <ul class="ui-ruled mp__tables">
+            @for (table of visibleTables(); track table.id) {
+              <li>
+                <a class="mp__table ui-mono" [routerLink]="['/tables']" [queryParams]="{ table: table.nomTable }">
+                  <mat-icon aria-hidden="true">table_chart</mat-icon>
+                  <span>{{ table.nomTable }}</span>
+                </a>
+              </li>
+            }
+          </ul>
+        }
+
+        @if (hasMoreTables()) {
+          <button type="button" class="ui-btn ui-btn--sm mp__more" (click)="loadMore()" [disabled]="loadingMore()">
+            {{ loadingMore() ? 'Chargement…' : 'Charger les tables suivantes (' + tables()!.length + ' / ' + tablesTotal() + ')' }}
+          </button>
+        }
+        @if (tablesFailed()) {
+          <div class="ui-error" role="alert">
+            <mat-icon aria-hidden="true">error_outline</mat-icon>
+            <span>Le chargement de la suite a échoué. <button type="button" class="mp__link" (click)="loadMore()">Réessayer</button></span>
+          </div>
+        }
+      }
+    </aside>
+  }
+</div>

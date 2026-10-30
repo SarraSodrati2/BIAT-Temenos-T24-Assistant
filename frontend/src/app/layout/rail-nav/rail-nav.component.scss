@@ -1,0 +1,161 @@
+:host { display: block; height: 100%; }
+
+.rail {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 18px 12px 12px;
+  background: var(--biat-white);
+  border-right: 1px solid var(--biat-border);
+  overflow-y: auto;
+}
+
+// --- Marque ------------------------------------------------------------------------------------
+.rail__brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 8px 20px;
+  text-decoration: none;
+  color: var(--biat-text);
+}
+
+.rail__mark {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  background: var(--biat-primary);
+  color: var(--biat-bg);
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.rail__brand-text { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
+.rail__brand-name { font-family: var(--font-display); font-size: 20px; font-weight: 600; letter-spacing: 0.02em; }
+.rail__brand-sub {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--biat-muted);
+}
+
+// --- Sections ----------------------------------------------------------------------------------
+.rail__sections { flex: 1 1 auto; display: flex; flex-direction: column; gap: 16px; min-height: 0; }
+
+// Liste des conversations sous la dernière section : elle prend toute la hauteur restante et défile seule, sans
+// jamais déborder sur « À propos / Replier » (overflow: hidden + liste en flex: 1 / min-height: 0 — avec
+// height: 100% seul, la liste ne se calait pas sur ce conteneur et le recouvrait, constaté le 2026-10-06).
+.rail__conversations {
+  flex: 1 1 0;
+  min-height: 200px;
+  margin: 0 -8px;
+  padding-top: 4px;
+  border-top: 1px solid var(--biat-border, rgba(0, 0, 0, 0.08));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  app-conversation-list { flex: 1; min-height: 0; height: auto; }
+}
+
+.rail__section-title {
+  margin: 0 0 6px;
+  padding: 0 10px;
+  font: 600 10.5px/1.4 var(--font-ui);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--biat-muted);
+}
+
+.rail__section-rule { display: block; height: 1px; margin: 4px 12px 8px; background: var(--biat-border); }
+
+.rail__list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 2px; }
+
+.rail__link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--biat-muted);
+  font: 500 14px/1 var(--font-ui);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.16s var(--ease-out), color 0.16s var(--ease-out);
+
+  &:hover { background: var(--tint-hover); color: var(--biat-text); }
+
+  // Repère d'état : filet vertical à gauche + libellé plus marqué (pas un bloc de couleur plein).
+  &--active {
+    background: var(--tint-selected);
+    color: var(--biat-primary);
+    font-weight: 600;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: -12px;
+      top: 8px;
+      bottom: 8px;
+      width: 3px;
+      border-radius: 0 3px 3px 0;
+      background: var(--biat-primary);
+    }
+  }
+
+  &--quiet { color: var(--biat-muted); font-weight: 400; }
+}
+
+.rail__icon { font-size: 21px; width: 21px; height: 21px; flex-shrink: 0; }
+.rail__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.rail__foot {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--biat-border);
+  // Écran bas : la colonne défile, mais « À propos / Replier » reste toujours visible en bas, sur fond opaque.
+  position: sticky;
+  bottom: -12px; // compense le padding bas de .rail
+  padding-bottom: 12px;
+  background: var(--biat-white);
+  z-index: 1;
+}
+
+// --- Écran peu haut (portable 13-14", fenêtre réduite) : navigation resserrée pour laisser de la place à la liste.
+@media (max-height: 820px) {
+  .rail { padding-top: 12px; }
+  .rail__brand { padding-bottom: 14px; }
+  .rail__sections { gap: 8px; }
+  .rail__section-title { margin-bottom: 2px; }
+  .rail__link { min-height: 34px; }
+  .rail:not(.rail--compact) .rail__foot {
+    flex-direction: row;
+    gap: 4px;
+    .rail__link { flex: 1; min-height: 36px; }
+  }
+}
+
+// --- Colonne d'icônes --------------------------------------------------------------------------
+.rail--compact {
+  padding-left: 10px;
+  padding-right: 10px;
+
+  .rail__brand { justify-content: center; padding-left: 0; padding-right: 0; }
+  .rail__link { justify-content: center; padding: 0; }
+  .rail__link--active::before { left: -10px; }
+}

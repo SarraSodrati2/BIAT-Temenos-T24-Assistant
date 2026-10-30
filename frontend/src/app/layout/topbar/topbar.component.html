@@ -1,0 +1,56 @@
+<header class="topbar">
+  <button
+    type="button"
+    class="topbar__theme"
+    role="switch"
+    [attr.aria-checked]="theme.isDark()"
+    (click)="theme.toggle()"
+    [matTooltip]="theme.isDark() ? 'Passer en mode clair' : 'Passer en mode sombre'"
+    [attr.aria-label]="theme.isDark() ? 'Mode sombre activé — passer en mode clair' : 'Mode clair activé — passer en mode sombre'"
+  >
+    <mat-icon aria-hidden="true">{{ theme.isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+    <span class="topbar__theme-label">{{ theme.isDark() ? 'Mode clair' : 'Mode sombre' }}</span>
+  </button>
+
+  <p class="topbar__crumb">
+    @if (section()) {
+      <span class="topbar__crumb-section">{{ section() }}</span>
+      <span class="topbar__crumb-sep" aria-hidden="true">/</span>
+    }
+    <strong>{{ title() }}</strong>
+  </p>
+
+  <app-search-box class="topbar__search" variant="compact" />
+
+  <div class="topbar__account">
+    <button type="button" class="topbar__user" [matMenuTriggerFor]="userMenu" aria-label="Menu du compte">
+      <span class="topbar__avatar" aria-hidden="true">{{ initials }}</span>
+      <span class="topbar__user-text">
+        <span class="topbar__username">{{ auth.username() ?? 'Utilisateur' }}</span>
+        <span class="topbar__role">{{ roleLabel() }}</span>
+      </span>
+      <mat-icon class="topbar__chevron" aria-hidden="true">expand_more</mat-icon>
+    </button>
+    <mat-menu #userMenu="matMenu" xPosition="before">
+      <div class="topbar__menu-head">
+        <strong>{{ auth.username() }}</strong>
+        <span>{{ roleLabel() }}</span>
+      </div>
+      <button mat-menu-item routerLink="/about">
+        <mat-icon>info</mat-icon>
+        <span>À propos de l'application</span>
+      </button>
+      @if (auth.hasRole('SUPER_ADMIN')) {
+        <button mat-menu-item routerLink="/settings">
+          <mat-icon>settings</mat-icon>
+          <span>Paramètres</span>
+        </button>
+      }
+    </mat-menu>
+
+    <button type="button" class="topbar__logout" (click)="logout()" aria-label="Se déconnecter">
+      <mat-icon aria-hidden="true">logout</mat-icon>
+      <span class="topbar__logout-label">Déconnexion</span>
+    </button>
+  </div>
+</header>

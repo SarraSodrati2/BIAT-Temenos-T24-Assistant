@@ -1,0 +1,210 @@
+<div class="chat">
+  <header class="chat__head">
+    <div class="chat__head-main">
+      <button type="button" class="ui-btn ui-btn--sm chat__conv-btn" (click)="openConversations.emit()">
+        <mat-icon aria-hidden="true">forum</mat-icon>
+        Conversations
+      </button>
+      <div class="chat__titles">
+        <p class="ui-eyebrow">Assistant documentaire</p>
+        <h1 class="chat__title">{{ conversationTitle || 'Nouvelle conversation' }}</h1>
+      </div>
+    </div>
+
+    @if (chatContext.step() === 'done') {
+      <div class="chat__context">
+        <span class="chat__module" title="Périmètre de la conversation">
+          <mat-icon aria-hidden="true">category</mat-icon>
+          Module <strong class="ui-mono">{{ chatContext.selectedModule() }}</strong>
+        </span>
+        <button type="button" class="ui-btn ui-btn--sm ui-btn--quiet" (click)="changeModule()">Changer de module</button>
+        <button type="button" class="ui-btn ui-btn--sm" (click)="startNewConversation()">
+          <mat-icon aria-hidden="true">add_comment</mat-icon>
+          Nouvelle conversation
+        </button>
+      </div>
+    }
+  </header>
+
+  <div class="chat__scroll">
+    <div class="chat__column" role="log" aria-live="polite" aria-relevant="additions" aria-label="Échanges avec l'assistant">
+      @if (chatContext.step() === 'loading') {
+        <div class="chat__loading" aria-busy="true">
+          <span class="ui-skeleton" style="height: 14px; width: 30%"></span>
+          <span class="ui-skeleton" style="height: 34px; width: 70%"></span>
+          <span class="ui-skeleton" style="height: 14px; width: 55%"></span>
+        </div>
+      } @else if (chatContext.step() === 'module') {
+        <section class="chooser">
+          <p class="ui-eyebrow">Étape 1 · Périmètre</p>
+          <h2 class="ui-display chooser__title">Sur quel module T24 travaillez-vous ?</h2>
+          <p class="ui-lede">L'assistant répond dans le périmètre d'un module. Vous pourrez en changer à tout moment sans perdre la conversation.</p>
+
+          @if (chatContext.modules().length === 0) {
+            <div class="chooser__grid" aria-busy="true">
+              @for (n of [1, 2, 3, 4, 5, 6, 7]; track n) {
+                <span class="ui-skeleton chooser__skeleton"></span>
+              }
+            </div>
+          } @else {
+            <div class="chooser__grid" role="group" aria-label="Modules T24 couverts par l'assistant">
+              @for (m of chatContext.modules(); track m.id) {
+                <button
+                  type="button"
+                  class="chooser__chip"
+                  [class.chooser__chip--selected]="pendingSelection() === m.nomModule"
+                  (click)="chooseModule(m.nomModule)"
+                >
+                  <span class="ui-mono">{{ m.nomModule }}</span>
+                  <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+                </button>
+              }
+            </div>
+            <p class="chooser__note">Ces modules sont ceux couverts par l'assistant. Pour parcourir tout le référentiel (modules et tables), utilisez la recherche ou les pages Modules et Tables.</p>
+          }
+        </section>
+      } @else {
+        @if (isEmpty()) {
+          <section class="welcome">
+            <p class="ui-eyebrow">Périmètre · module {{ chatContext.selectedModule() }}</p>
+            <h2 class="ui-display welcome__title">Que voulez-vous savoir sur le module <span class="ui-mono">{{ chatContext.selectedModule() }}</span> ?</h2>
+            <p class="ui-lede">Posez votre question en français. L'assistant ne répond qu'à partir de la documentation T24 indexée et cite sa source ; si l'information n'y figure pas, il le dit.</p>
+
+            @if (exampleQuestions().length > 0) {
+              <h3 class="ui-eyebrow welcome__label">Exemples de questions</h3>
+              <ul class="ui-ruled welcome__examples">
+                @for (question of exampleQuestions(); track question) {
+                  <li>
+                    <button type="button" class="welcome__example" (click)="ask(question)" [disabled]="loading()">
+                      <span>{{ question }}</span>
+                      <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+                    </button>
+                  </li>
+                }
+              </ul>
+            }
+
+            @if (chatContext.tables().length > 0) {
+              <details class="welcome__tables" [open]="showTables()" (toggle)="showTables.set($any($event.target).open)">
+                <summary>Tables du module {{ chatContext.selectedModule() }} ({{ chatContext.tables().length }}) — cliquez pour préparer une question</summary>
+                <div class="welcome__table-list">
+                  @for (table of chatContext.tables(); track table.id) {
+                    <button type="button" class="welcome__table ui-tag" (click)="useQuestion('Décris la table ' + table.nomTable)">{{ table.nomTable }}</button>
+                  }
+                </div>
+              </details>
+            }
+          </section>
+        } @else {
+          <div class="chat__thread">
+          @for (message of messages(); track message.id) {
+            @if (message.id !== -1) {
+              <article class="msg" [class.msg--user]="message.sender === 'USER'">
+                @if (message.sender === 'USER') {
+                  <span class="sr-only">Vous :</span>
+                  <div class="chat-bubble chat-bubble--user">{{ message.content }}</div>
+                } @else {
+                  <span class="msg__mark" aria-hidden="true">T24</span>
+                  <div class="msg__card">
+                    <span class="sr-only">Réponse de l'assistant :</span>
+                    @if (message.error) {
+                      <div class="ui-error" role="alert">
+                        <mat-icon aria-hidden="true">error_outline</mat-icon>
+                        <span class="chat-bubble chat-bubble--ai-rich chat-bubble--error">{{ message.content }}</span>
+                      </div>
+                    } @else {
+                      <div
+                        class="chat-bubble chat-bubble--ai-rich answer"
+                        [class.chat-bubble--clamped]="isLong(message) && !isExpanded(message)"
+                        [innerHTML]="formatAiContent(message.content)"
+                        (click)="onAnswerActivate($event)"
+                        (keydown)="onAnswerActivate($event)"
+                      ></div>
+                      @if (isLong(message)) {
+                        <button type="button" class="ui-btn ui-btn--sm msg__more" (click)="toggleExpanded(message)" [attr.aria-expanded]="isExpanded(message)">
+                          {{ isExpanded(message) ? 'Réduire la réponse' : 'Afficher la réponse complète' }}
+                        </button>
+                      }
+                    }
+                  </div>
+                }
+
+                <div class="msg__actions">
+                  @if (message.error && lastErrorId() === message.id) {
+                    <button type="button" class="ui-btn ui-btn--sm" (click)="retry()" [disabled]="loading()">
+                      <mat-icon aria-hidden="true">refresh</mat-icon>
+                      Réessayer
+                    </button>
+                  }
+                  @if (!message.error) {
+                    <button type="button" class="msg__btn" matTooltip="Copier" aria-label="Copier le message" (click)="copyMessage(message)">
+                      <mat-icon aria-hidden="true">{{ copiedMessageId() === message.id ? 'check' : 'content_copy' }}</mat-icon>
+                    </button>
+                  }
+                  @if (message.sender === 'USER' && message.persisted) {
+                    <button type="button" class="msg__btn" matTooltip="Modifier et renvoyer" aria-label="Modifier ce message" [disabled]="loading()" (click)="editMessage(message)">
+                      <mat-icon aria-hidden="true">edit</mat-icon>
+                    </button>
+                    <button type="button" class="msg__btn" matTooltip="Supprimer" aria-label="Supprimer ce message et sa réponse" (click)="deleteMessage(message)">
+                      <mat-icon aria-hidden="true">delete_outline</mat-icon>
+                    </button>
+                  }
+                </div>
+              </article>
+            }
+          }
+
+          @if (loading()) {
+            <div class="msg" role="status">
+              <span class="msg__mark" aria-hidden="true">T24</span>
+              <div class="msg__card msg__card--pending">
+                <span class="chat-bubble chat-bubble--typing" aria-hidden="true"><span></span><span></span><span></span></span>
+                <p class="msg__pending-text">
+                  L'assistant consulte la documentation…
+                  @if (elapsed() >= slowHintAfter) {
+                    <span class="msg__pending-slow">{{ elapsed() }} s — la génération est plus longue que d'habitude (modèle local) ; ne fermez pas la page.</span>
+                  }
+                </p>
+                <button type="button" class="ui-btn ui-btn--sm ui-btn--quiet" (click)="stop()">Arrêter</button>
+              </div>
+            </div>
+          }
+          </div>
+        }
+      }
+
+      <div #scrollAnchor></div>
+    </div>
+  </div>
+
+  @if (chatContext.step() === 'done') {
+    <form class="composer" (ngSubmit)="send()">
+      <div class="composer__box">
+        <label class="sr-only" for="composer-input">Votre question sur la documentation T24</label>
+        <textarea
+          #composer
+          id="composer-input"
+          name="draft"
+          class="composer__input"
+          rows="1"
+          maxlength="2000"
+          [placeholder]="'Posez votre question sur le module ' + chatContext.selectedModule() + '…'"
+          [(ngModel)]="draft"
+          (keydown)="onComposerKeydown($event)"
+          (input)="onDraftInput()"
+          aria-describedby="composer-hint"
+        ></textarea>
+        <button type="submit" class="composer__send" [disabled]="!draft.trim() || loading()" aria-label="Envoyer la question">
+          <mat-icon aria-hidden="true">arrow_upward</mat-icon>
+        </button>
+      </div>
+      <p id="composer-hint" class="composer__hint">
+        <span><kbd class="ui-kbd">Entrée</kbd> envoyer</span>
+        <span><kbd class="ui-kbd">Maj</kbd> + <kbd class="ui-kbd">Entrée</kbd> nouvelle ligne</span>
+        @if (draft.length > 1500) {
+          <span class="composer__count">{{ draft.length }} / 2000</span>
+        }
+      </p>
+    </form>
+  }
+</div>

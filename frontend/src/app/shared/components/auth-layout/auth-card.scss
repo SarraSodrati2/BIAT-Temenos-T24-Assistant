@@ -1,0 +1,38 @@
+// Styles du formulaire projeté dans <app-auth-layout> (connexion et inscription).
+.auth-card__title { margin: 0 0 6px; font: 500 30px/1.15 var(--font-display); letter-spacing: -0.01em; color: var(--biat-text); }
+.auth-card__sub { margin: 0 0 26px; font-size: 14.5px; color: var(--biat-muted); }
+
+.auth-card__form { display: flex; flex-direction: column; }
+.auth-card__field { width: 100%; }
+.auth-card__field mat-icon[matPrefix] { margin-right: 8px; color: var(--biat-muted-light); font-size: 20px; width: 20px; height: 20px; }
+.auth-card__eye { color: var(--biat-muted-light); }
+
+.auth-card__error,
+.auth-card__success {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+.auth-card__error { background: var(--danger-tint); color: var(--danger-ink); }
+.auth-card__success { background: var(--success-tint); color: var(--success-ink); }
+.auth-card__error mat-icon, .auth-card__success mat-icon { flex-shrink: 0; font-size: 19px; width: 19px; height: 19px; }
+
+.auth-card__submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  border-radius: var(--radius-md) !important;
+  font: 500 15px/1 var(--font-ui) !important;
+}
+.auth-card__submit mat-icon { font-size: 18px; width: 18px; height: 18px; }
+
+.auth-card__switch { margin: 24px 0 0; text-align: center; font-size: 14px; color: var(--biat-muted); }
+.auth-card__switch a { margin-left: 4px; color: var(--biat-primary); font-weight: 600; text-decoration: none; }
+.auth-card__switch a:hover { text-decoration: underline; }

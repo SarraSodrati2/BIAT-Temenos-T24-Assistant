@@ -1,0 +1,99 @@
+<div class="hp">
+  <!-- La liste des conversations est dans la colonne de navigation, sous « Utilisateurs » (RailNavComponent). -->
+  <section class="hp__view" aria-label="Conversation en lecture seule">
+    <div #top></div>
+    <div class="hp__bar">
+      <button type="button" class="ui-btn ui-btn--sm hp__list-btn" (click)="layout.openDrawer()">
+        <mat-icon aria-hidden="true">forum</mat-icon>
+        Conversations
+      </button>
+    </div>
+
+    @if (!id) {
+      <div class="hp__empty">
+        <p class="ui-eyebrow">Historique</p>
+        <h1 class="ui-display hp__empty-title">Relisez vos échanges passés.</h1>
+        <p class="ui-lede">Choisissez une conversation dans la liste : elle s'affiche ici en lecture seule, avec les réponses mises en forme et leurs sources. Vous pourrez la reprendre dans l'assistant en un clic.</p>
+      </div>
+    } @else if (failed() === 'notfound') {
+      <div class="hp__state">
+        <div class="ui-empty">
+          <mat-icon aria-hidden="true">search_off</mat-icon>
+          <strong>Conversation introuvable</strong>
+          <p>Elle a peut-être été supprimée, ou elle ne vous appartient pas. Choisissez-en une autre dans la liste.</p>
+        </div>
+      </div>
+    } @else if (failed() === 'error') {
+      <div class="hp__state">
+        <div class="ui-error" role="alert">
+          <mat-icon aria-hidden="true">error_outline</mat-icon>
+          <span>Impossible de charger cette conversation. Vérifiez la connexion au serveur.
+            <button type="button" class="hp__link" (click)="reload()">Réessayer</button></span>
+        </div>
+      </div>
+    } @else if (chat() === null || messages() === null) {
+      <div class="hp__state" aria-busy="true" aria-label="Chargement de la conversation">
+        <span class="ui-skeleton" style="height: 26px; width: 55%"></span>
+        <span class="ui-skeleton" style="height: 14px; width: 35%"></span>
+        <span class="ui-skeleton" style="height: 90px"></span>
+        <span class="ui-skeleton" style="height: 160px"></span>
+      </div>
+    } @else {
+      @if (chat(); as c) {
+        <header class="hp__head">
+          <div class="hp__titles">
+            <p class="ui-eyebrow">Lecture seule</p>
+            <h1 class="hp__title">{{ c.title }}</h1>
+            <p class="hp__meta">
+              Dernière activité le {{ c.updatedAt | date: 'dd/MM/yyyy à HH:mm' }} · {{ c.messageCount }} message{{ c.messageCount > 1 ? 's' : '' }}
+              @if (c.selectedModule) {
+                · <span class="ui-tag">Module {{ c.selectedModule }}</span>
+              }
+            </p>
+          </div>
+          <button type="button" class="ui-btn ui-btn--primary" (click)="continueInAssistant(c)">
+            <mat-icon aria-hidden="true">question_answer</mat-icon>
+            Continuer dans l'assistant
+          </button>
+        </header>
+      }
+
+      @if (messages()!.length === 0) {
+        <div class="hp__state">
+          <div class="ui-empty">
+            <mat-icon aria-hidden="true">chat_bubble_outline</mat-icon>
+            <strong>Cette conversation ne contient aucun message</strong>
+            <p>Reprenez-la dans l'assistant pour poser votre première question.</p>
+          </div>
+        </div>
+      } @else {
+        <div class="hp__thread">
+          @for (entry of messages(); track entry.id) {
+            <article class="hp__msg" [class.hp__msg--user]="entry.messageType === 'USER'">
+              <header class="hp__msg-head">
+                <span class="hp__who">{{ entry.messageType === 'USER' ? 'Vous' : 'Assistant T24' }}</span>
+                <time class="hp__time" [attr.datetime]="entry.createdAt">{{ entry.createdAt | date: 'dd/MM/yyyy HH:mm' }}</time>
+              </header>
+              @if (entry.messageType === 'USER') {
+                <p class="hp__question">{{ entry.content }}</p>
+              } @else {
+                <div
+                  class="hp__answer answer"
+                  [class.hp__answer--clamped]="isLong(entry) && !isExpanded(entry)"
+                  [innerHTML]="format(entry.content)"
+                  (click)="onAnswerActivate($event)"
+                  (keydown)="onAnswerActivate($event)"
+                ></div>
+                @if (isLong(entry)) {
+                  <button type="button" class="ui-btn ui-btn--sm" (click)="toggle(entry)" [attr.aria-expanded]="isExpanded(entry)">
+                    {{ isExpanded(entry) ? 'Réduire la réponse' : 'Afficher la réponse complète' }}
+                  </button>
+                }
+              }
+            </article>
+          }
+        </div>
+      }
+    }
+  </section>
+</div>

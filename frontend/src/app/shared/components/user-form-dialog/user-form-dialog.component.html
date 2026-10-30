@@ -1,0 +1,43 @@
+<h2 mat-dialog-title>{{ isEdit ? "Modifier l'utilisateur" : 'Nouvel utilisateur' }}</h2>
+
+<form #userForm="ngForm" (ngSubmit)="submit(userForm)">
+  <div mat-dialog-content class="user-form">
+    <mat-form-field appearance="outline" class="user-form__field">
+      <mat-label>Nom d'utilisateur</mat-label>
+      <input matInput name="username" [(ngModel)]="username" required [disabled]="saving()" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="user-form__field">
+      <mat-label>Email</mat-label>
+      <input matInput type="email" name="email" [(ngModel)]="email" required email [disabled]="saving()" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="user-form__field">
+      <mat-label>Mot de passe</mat-label>
+      <input matInput type="password" name="password" [(ngModel)]="password" required minlength="8" [disabled]="saving()" />
+      <mat-hint>Requis à chaque enregistrement (8 caractères minimum).</mat-hint>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="user-form__field">
+      <mat-label>Rôle</mat-label>
+      <mat-select name="role" [(ngModel)]="role" required [disabled]="saving()">
+        @for (r of roles; track r) {
+          <mat-option [value]="r">{{ r }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-slide-toggle name="isActive" [(ngModel)]="isActive" [disabled]="saving()">Compte actif</mat-slide-toggle>
+
+    @if (errorMessage()) {
+      <p class="user-form__error">{{ errorMessage() }}</p>
+    }
+  </div>
+
+  <div mat-dialog-actions align="end">
+    <button mat-button type="button" (click)="cancel()" [disabled]="saving()">Annuler</button>
+    <button mat-flat-button color="primary" type="submit" [disabled]="userForm.invalid || saving()">
+      {{ saving() ? 'Enregistrement...' : 'Enregistrer' }}
+    </button>
+  </div>
+</form>

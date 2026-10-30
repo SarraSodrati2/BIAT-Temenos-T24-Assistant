@@ -1,0 +1,197 @@
+<div class="ui-page tp">
+  <header class="tp__head">
+    <p class="ui-eyebrow">Référentiel T24</p>
+    <h1 class="ui-display tp__title">Tables</h1>
+    <p class="ui-lede">
+      @if (loadFailed()) {
+        Le catalogue n'a pas pu être chargé.
+      } @else if (tables() !== null) {
+        @if (searchTerm()) {
+          {{ totalElements() }} table{{ totalElements() > 1 ? 's' : '' }} contenant « {{ searchTerm() }} ».
+        } @else {
+          {{ totalElements() }} tables documentées.
+        }
+      }
+      Ouvrez une table pour consulter ses champs documentés.
+    </p>
+
+    <form class="tp__search" role="search" (ngSubmit)="submitSearch(box.value)">
+      <mat-icon aria-hidden="true">search</mat-icon>
+      <label class="sr-only" for="tp-search">Rechercher une table par nom</label>
+      <input
+        #box
+        id="tp-search"
+        name="q"
+        type="text"
+        class="tp__input"
+        placeholder="Rechercher une table par nom — ex. CUSTOMER, MD.PARAMETER…"
+        autocomplete="off"
+        [ngModel]="searchTerm()"
+        (ngModelChange)="onSearchInput($event)"
+      />
+      @if (searchTerm()) {
+        <button type="button" class="tp__clear" (click)="clearSearch()" aria-label="Effacer la recherche">
+          <mat-icon aria-hidden="true">close</mat-icon>
+        </button>
+      }
+    </form>
+  </header>
+
+  @if (notFound(); as name) {
+    <div class="ui-error" role="alert">
+      <mat-icon aria-hidden="true">search_off</mat-icon>
+      <span>La table « <span class="ui-mono">{{ name }}</span> » n'existe pas dans le référentiel.
+        <button type="button" class="tp__link" (click)="searchFor(name)">Rechercher « {{ name }} »</button></span>
+    </div>
+  }
+
+  <div class="tp__panel">
+    @if (loadFailed()) {
+      <div class="ui-error" role="alert">
+        <mat-icon aria-hidden="true">error_outline</mat-icon>
+        <span>Impossible de charger les tables. Vérifiez la connexion au serveur.
+          <button type="button" class="tp__link" (click)="onPage({ pageIndex: pageIndex, pageSize: pageSize, length: totalElements() })">Réessayer</button></span>
+      </div>
+    } @else if (tables() === null) {
+      <div class="tp__skeletons" aria-busy="true" aria-label="Chargement des tables">
+        @for (n of [1, 2, 3, 4, 5, 6, 7, 8]; track n) {
+          <span class="ui-skeleton" style="height: 22px"></span>
+        }
+      </div>
+    } @else if (tables()!.length === 0) {
+      <div class="ui-empty">
+        <mat-icon aria-hidden="true">search_off</mat-icon>
+        <strong>Aucune table ne correspond à « {{ searchTerm() }} »</strong>
+        <p>Essayez une partie plus courte du nom. Pour retrouver un champ, ouvrez sa table ou interrogez l'assistant.</p>
+        <button type="button" class="ui-btn ui-btn--sm" (click)="clearSearch()">Voir toutes les tables</button>
+      </div>
+    } @else {
+      <div class="tp__scroll">
+        <table mat-table matSort [dataSource]="tables()!" (matSortChange)="onSort($event)" class="tp__table">
+          <ng-container matColumnDef="nomTable">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Table</th>
+            <td mat-cell *matCellDef="let row">
+              <button type="button" class="tp__open ui-mono" (click)="open(row)" [attr.aria-label]="'Ouvrir la table ' + row.nomTable">
+                {{ row.nomTable }}
+              </button>
+              @if (isExact(row)) {
+                <span class="ui-tag ui-tag--ok">Exact</span>
+              }
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="module">
+            <th mat-header-cell *matHeaderCellDef>Module</th>
+            <td mat-cell *matCellDef="let row"><span class="ui-mono">{{ moduleName(row) }}</span></td>
+          </ng-container>
+
+          <ng-container matColumnDef="updatedAt">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Mise à jour</th>
+            <td mat-cell *matCellDef="let row">{{ row.updatedAt | date: 'dd/MM/yyyy' }}</td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;" [class.tp__row--active]="selected()?.id === row.id"></tr>
+        </table>
+      </div>
+
+      <mat-paginator
+        [length]="totalElements()"
+        [pageIndex]="pageIndex"
+        [pageSize]="pageSize"
+        [pageSizeOptions]="[10, 20, 50]"
+        (page)="onPage($event)"
+        aria-label="Pagination des tables"
+      />
+    }
+  </div>
+
+  @if (selected(); as table) {
+    <div class="tp__scrim" (click)="close()" aria-hidden="true"></div>
+    <aside class="tp__detail" role="dialog" aria-modal="false" [attr.aria-label]="'Table ' + table.nomTable">
+      <header class="tp__detail-head">
+        <div class="tp__detail-titles">
+          <p class="ui-eyebrow">Table · module {{ moduleName(table) }}</p>
+          <h2 class="tp__detail-title ui-mono">{{ table.nomTable }}</h2>
+          <p class="tp__detail-meta">Mise à jour le {{ table.updatedAt | date: 'dd/MM/yyyy' }}</p>
+        </div>
+        <button type="button" class="tp__close" (click)="close()" aria-label="Fermer le panneau de la table">
+          <mat-icon aria-hidden="true">close</mat-icon>
+        </button>
+      </header>
+
+      <div class="tp__detail-actions">
+        <button type="button" class="ui-btn ui-btn--sm ui-btn--primary" (click)="askAssistant(table)">
+          <mat-icon aria-hidden="true">question_answer</mat-icon>
+          Interroger l'assistant
+        </button>
+        <button type="button" class="ui-btn ui-btn--sm" (click)="copyName(table)">
+          <mat-icon aria-hidden="true">{{ copied() ? 'check' : 'content_copy' }}</mat-icon>
+          {{ copied() ? 'Nom copié' : 'Copier le nom' }}
+        </button>
+      </div>
+
+      <h3 class="ui-eyebrow tp__fields-title">Champs documentés @if (fields() !== null && !fieldsFailed()) { ({{ fields()!.length }}) }</h3>
+
+      @if (fields() === null) {
+        <div class="tp__detail-loading" aria-busy="true" aria-label="Chargement des champs">
+          @for (n of [1, 2, 3, 4, 5]; track n) {
+            <span class="ui-skeleton" style="height: 44px"></span>
+          }
+        </div>
+      } @else if (fieldsFailed()) {
+        <div class="ui-error" role="alert">
+          <mat-icon aria-hidden="true">error_outline</mat-icon>
+          <span>Impossible de charger les champs de cette table.
+            <button type="button" class="tp__link" (click)="retryFields()">Réessayer</button></span>
+        </div>
+      } @else if (fields()!.length === 0) {
+        <div class="ui-empty">
+          <mat-icon aria-hidden="true">description</mat-icon>
+          <strong>Aucun champ documenté</strong>
+          <p>La documentation indexée ne détaille aucun champ pour cette table.</p>
+        </div>
+      } @else {
+        <label class="sr-only" for="tp-field-filter">Filtrer les champs</label>
+        <input
+          id="tp-field-filter"
+          class="ui-input tp__field-filter"
+          type="text"
+          placeholder="Filtrer les champs par nom ou description…"
+          autocomplete="off"
+          [ngModel]="fieldFilter()"
+          (ngModelChange)="fieldFilter.set($event)"
+        />
+        <p class="tp__field-count" aria-live="polite">{{ visibleFields().length }} champ{{ visibleFields().length > 1 ? 's' : '' }} affiché{{ visibleFields().length > 1 ? 's' : '' }}</p>
+
+        @if (visibleFields().length === 0) {
+          <p class="tp__none">Aucun champ ne correspond à « {{ fieldFilter() }} ».</p>
+        } @else {
+          <ul class="ui-ruled tp__fields">
+            @for (field of visibleFields(); track field.name) {
+              <li class="tp__field">
+                <div class="tp__field-head">
+                  <span class="tp__field-name ui-mono">{{ field.name }}</span>
+                  @for (tag of fieldMeta(field); track tag.label) {
+                    <span class="ui-tag" [class.ui-tag--warn]="tag.tone === 'warn'">{{ tag.label }}</span>
+                  }
+                </div>
+                @if (field.description) {
+                  <p class="tp__field-desc">{{ field.description }}</p>
+                } @else {
+                  <p class="tp__field-desc tp__field-desc--none">Description non renseignée dans la documentation.</p>
+                }
+                @if (field.validation) {
+                  <p class="tp__field-extra"><strong>Validation :</strong> {{ field.validation }}</p>
+                }
+                @if (field.defaultValue) {
+                  <p class="tp__field-extra"><strong>Valeur par défaut :</strong> <span class="ui-mono">{{ field.defaultValue }}</span></p>
+                }
+              </li>
+            }
+          </ul>
+        }
+      }
+    </aside>
+  }
+</div>

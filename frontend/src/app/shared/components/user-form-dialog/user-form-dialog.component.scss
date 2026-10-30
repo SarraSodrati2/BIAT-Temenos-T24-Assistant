@@ -1,0 +1,17 @@
+.user-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 340px;
+  padding-top: 4px;
+
+  &__field {
+    width: 100%;
+  }
+
+  &__error {
+    margin: 0 0 8px;
+    font-size: 13px;
+    color: #DC2626;
+  }
+}

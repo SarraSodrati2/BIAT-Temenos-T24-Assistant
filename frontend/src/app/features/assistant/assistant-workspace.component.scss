@@ -1,0 +1,20 @@
+:host { display: block; }
+
+// Une seule colonne : la liste des conversations est dans la colonne de navigation (RailNavComponent).
+.ws {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  // Rangée implicite unique : sans grid-template-rows, elle se dimensionne à son contenu (comportement
+  // Grid par défaut, contrairement à Flexbox) au lieu de remplir la hauteur explicite ci-dessous — cause
+  // exacte du grand vide constaté sous le composeur (.chat, en height: 100%, héritait alors d'une hauteur
+  // de ligne trop courte au lieu de toute la hauteur disponible).
+  grid-template-rows: minmax(0, 1fr);
+  height: calc(100dvh - var(--topbar-height));
+  min-height: 420px;
+}
+
+.ws__chat { min-width: 0; min-height: 0; }
+
+@media (max-width: 767px) {
+  .ws { height: calc(100dvh - var(--topbar-height) - var(--bottomnav-height)); }
+}
